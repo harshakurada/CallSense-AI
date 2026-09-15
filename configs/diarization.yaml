@@ -1,0 +1,35 @@
+# Speaker diarization configuration (Module 3). See docs/DIARIZATION.md for
+# why this is an embedding+clustering pipeline rather than pyannote.audio's
+# pretrained pipeline (which is gated on Hugging Face and this project has
+# no accepted-terms token for).
+
+segmentation:
+  # Diarization re-uses Module 2's energy-based VAD (src/audio/vad.py) to
+  # find speech regions — segment boundaries are silence gaps, since no
+  # neural speaker-change segmenter is used. Documented limitation: a
+  # continuous back-and-forth with no silence between turns will not be
+  # split, and overlapping speech is not detected as overlap at all (see
+  # docs/DIARIZATION.md).
+  min_segment_duration_seconds: 0.5   # shorter regions produce unreliable embeddings
+  max_segment_duration_seconds: 12.0  # longer regions are sub-windowed for embedding stability
+  merge_gap_seconds: 0.3              # same-speaker regions closer than this are merged before clustering
+
+embedding:
+  engine: speechbrain
+  model_name: speechbrain/spkrec-ecapa-voxceleb
+  device: cpu
+
+clustering:
+  method: agglomerative
+  metric: cosine
+  linkage: average
+  # Customer-service calls are two-party by convention; kept as an explicit,
+  # overridable assumption rather than auto-estimating speaker count, which
+  # this classical pipeline has no reliable signal for.
+  expected_speakers: 2
+
+roles:
+  # "First speaker to talk = agent" is a weak, domain-typical heuristic
+  # (inbound calls are usually answered/greeted by the agent) — NOT applied
+  # by default. See src/diarization/roles.py and docs/DIARIZATION.md.
+  apply_first_speaker_heuristic: false

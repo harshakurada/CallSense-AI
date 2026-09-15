@@ -64,3 +64,10 @@ def get_audio_config() -> dict:
     config_path = BASE_DIR / "configs" / "audio.yaml"
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+@lru_cache
+def get_diarization_config() -> dict:
+    config_path = BASE_DIR / "configs" / "diarization.yaml"
+    with open(config_path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)

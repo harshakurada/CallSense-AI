@@ -38,10 +38,23 @@ jiwer==3.0.4
 matplotlib==3.9.2
 pyarrow==25.0.1  # scripts/download_data.py reads the librispeech-dummy parquet file directly
 
-# --- Deep learning / NLP (Module 3+, not installed yet) ---
-torch==2.4.1
+# --- Speaker diarization (Module 3) ---
+# pyannote.audio's pretrained pipeline is gated (requires an accepted-terms
+# HF token this project doesn't have) — see docs/DIARIZATION.md. Diarization
+# instead uses an ungated speechbrain embedding + sklearn clustering
+# pipeline. torch/torchaudio are CPU wheels from
+# https://download.pytorch.org/whl/cpu (PyPI's default torch wheel bundles
+# CUDA and is far larger than needed here).
+# pip install --index-url https://download.pytorch.org/whl/cpu torch==2.7.1 torchaudio==2.7.1
+torch==2.7.1
+torchaudio==2.7.1
+speechbrain==1.1.1
+scikit-learn==1.9.1
+pyannote.core==6.0.1     # DER computation only (src/diarization/evaluation.py) — not the gated pipeline
+pyannote.metrics==3.2.1
+
+# --- NLP (Module 4+, not installed yet) ---
 transformers==4.45.1
-pyannote.audio==3.3.2
 sentence-transformers==3.1.1
 
 # --- Testing ---

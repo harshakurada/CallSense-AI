@@ -85,6 +85,13 @@ python scripts/evaluate_asr.py --manifest data/raw/librispeech_dummy/manifest.js
 python scripts/eda_audio.py --input data/raw/librispeech_dummy --output-dir reports/eda
 ```
 
+### Run diarization + the full speaker-attributed pipeline (Module 3)
+
+```bash
+python scripts/evaluate_diarization.py   # real DER on a synthetic two-speaker test call
+python scripts/run_diarization_pipeline.py --input data/raw/librispeech_dummy/1272-128104-0000.flac
+```
+
 ## Project Structure
 
 ```text
@@ -99,12 +106,14 @@ CallSense AI/
 │   ├── inference/       # pipeline orchestration
 │   └── utils/           # logging, exceptions
 ├── scripts/            # download_data, validate_dataset, transcribe_dataset,
-│                       # evaluate_asr, eda_audio, run_asr_pipeline
-├── tests/              # unit + API + audio + ASR tests
-├── configs/            # config.yaml, audio.yaml (non-secret) + settings.py (env-based)
+│                       # evaluate_asr, eda_audio, run_asr_pipeline,
+│                       # evaluate_diarization, run_diarization_pipeline
+├── tests/              # unit + API + audio + ASR + diarization tests
+├── configs/            # config.yaml, audio.yaml, diarization.yaml + settings.py
 ├── models/             # saved model artifacts (git-ignored)
 ├── notebooks/          # exploratory notebooks per module
-├── docs/               # ARCHITECTURE.md, PROJECT_PLAN.md, DATASETS.md, ASR_EVALUATION.md
+├── docs/               # ARCHITECTURE.md, PROJECT_PLAN.md, DATASETS.md,
+│                       # ASR_EVALUATION.md, DIARIZATION.md
 ├── app/                # Streamlit dashboard
 ├── api/                # FastAPI backend
 ├── requirements.txt
@@ -114,7 +123,7 @@ CallSense AI/
 
 ## Current Status
 
-**Modules 1–2 complete.**
+**Modules 1–3 complete.**
 
 - **Module 1 (Foundation)**: repository structure, centralized configuration,
   a working FastAPI backend and Streamlit dashboard wired via a health check,
@@ -125,8 +134,22 @@ CallSense AI/
   transcription returning the exact `{call_id, language, duration, segments}`
   schema, batch transcription, WER evaluation, and an EDA script. Measured on
   73 real LibriSpeech clips: **8.70% corpus WER** — full breakdown and error
-  analysis in `docs/ASR_EVALUATION.md`. No customer-service-domain metrics
-  exist yet or are claimed; that data doesn't exist until later modules.
+  analysis in `docs/ASR_EVALUATION.md`.
+- **Module 3 (Speaker Diarization)**: pyannote.audio's pretrained pipeline is
+  gated (no HF token/accepted terms available here — verified and
+  documented in `docs/DIARIZATION.md`), so diarization uses an ungated
+  speechbrain ECAPA-TDNN embedding + agglomerative clustering pipeline
+  instead. Reuses Module 2's VAD for segmentation, aligns diarization
+  output with Whisper's transcript by overlap, and keeps generic
+  `SPEAKER_00`/`SPEAKER_01` labels by default — an unverified
+  "first-speaker-is-agent" heuristic is available but opt-in only. Measured
+  on a real (synthetically-labeled) two-speaker test: **11.68% DER, zero
+  speaker confusion** — full methodology and limitations (notably
+  overlapping speech) in `docs/DIARIZATION.md`. `src/inference/pipeline.py`
+  integrates Modules 2–3 end to end.
+
+No customer-service-domain metrics exist yet or are claimed anywhere —
+that data doesn't exist until the NLP modules need it.
 
 Full requirements and constraints: [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md).
 
@@ -136,7 +159,7 @@ Full requirements and constraints: [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md
 |---|---|---|
 | 1 | Foundation | ✅ Done |
 | 2 | Data + Audio + ASR | ✅ Done |
-| 3 | Speaker Diarization | Not started |
+| 3 | Speaker Diarization | ✅ Done |
 | 4 | Intent + Sentiment + Emotion | Not started |
 | 5 | NER + Information Extraction | Not started |
 | 6 | Conversation-Level Deep Learning | Not started |

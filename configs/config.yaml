@@ -11,11 +11,11 @@ asr:
   compute_type: int8  # int8 on CPU, float16 would be used on GPU (see src/asr/transcribe.py)
   language: en
 
-diarization:
-  engine: pyannote.audio
-  model_name: pyannote/speaker-diarization-3.1
-  min_speakers: 2
-  max_speakers: 2
+# Detailed diarization parameters live in configs/diarization.yaml — see
+# get_diarization_config() and docs/DIARIZATION.md for why pyannote.audio's
+# pretrained pipeline (gated, requires an accepted-terms HF token this
+# project doesn't have) was replaced with an ungated embedding+clustering
+# approach.
 
 nlp:
   intent_model: bert-base-uncased

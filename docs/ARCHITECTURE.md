@@ -6,7 +6,7 @@
 flowchart TD
     A[Audio Call] --> B[Audio Preprocessing - librosa]
     B --> C[Speech-to-Text - faster-whisper]
-    C --> D[Speaker Diarization - pyannote.audio]
+    C --> D[Speaker Diarization - speechbrain embeddings + clustering]
     D --> E[Transcript]
     E --> F[Intent Classification]
     E --> G[Sentiment Analysis]
@@ -90,7 +90,7 @@ path, model name, threshold, or connection string:
 | DL framework | PyTorch | Native Hugging Face integration; standard for research-to-production NLP/speech. |
 | NLP models | Hugging Face Transformers | Pretrained checkpoints + fine-tuning for intent/sentiment/emotion/NER (Modules 4-5). |
 | ASR | faster-whisper | CTranslate2-based re-implementation of Whisper — same accuracy, several times faster and lighter on CPU, which is the default runtime target here. |
-| Diarization | pyannote.audio | The de facto open-source diarization stack, HF-hub distributed, integrates directly with the rest of the pipeline. Added beyond the initially-listed stack because diarization (Module 3) has no viable substitute in it. |
+| Diarization | speechbrain ECAPA-TDNN embeddings + scikit-learn clustering | pyannote.audio's pretrained pipeline is gated (verified against the HF Hub API: `pyannote/speaker-diarization-3.1` requires an accepted-terms token this project doesn't have); speechbrain's embedding model is ungated and downloads anonymously. Full rationale and measured DER in `docs/DIARIZATION.md`. |
 | Audio processing | librosa (+ soundfile) | Standard for resampling, normalization, silence trimming, feature extraction. |
 | Semantic search | sentence-transformers | Standard embedding models for the Module 8 search feature. |
 | Backend API | FastAPI | Async, typed, auto-documented; thin layer over `src/inference`. |

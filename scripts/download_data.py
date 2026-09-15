@@ -27,8 +27,11 @@ OPENSLR_SUBSETS = {"dev-clean", "dev-other", "test-clean", "test-other"}
 
 
 def _download_with_progress(url: str, dest: Path, chunk_size: int = 1 << 20) -> None:
+    """(connect_timeout, read_timeout) — found hanging indefinitely on a
+    stalled connection during development with only a single connect
+    timeout; a read timeout ensures a stall errors out instead."""
     dest.parent.mkdir(parents=True, exist_ok=True)
-    with requests.get(url, stream=True, timeout=30) as resp:
+    with requests.get(url, stream=True, timeout=(30, 60)) as resp:
         resp.raise_for_status()
         total = int(resp.headers.get("content-length", 0))
         downloaded = 0

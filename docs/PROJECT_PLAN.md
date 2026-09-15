@@ -120,7 +120,7 @@ layer, never as the system's primary intelligence.
 | **10. Testing + MLOps + Docker + Deployment** | Full test suite, MLflow tracking, Docker Compose, monitoring. |
 
 Each module is defined, implemented, and validated independently before the
-next begins — Modules 3–10 are not started until explicitly requested.
+next begins — Modules 4–10 are not started until explicitly requested.
 
 ## 12. Current Status
 
@@ -138,6 +138,20 @@ required JSON schema; batch transcription and dataset validation scripts
 with per-file failure isolation; WER evaluation (`src/asr/evaluation.py`)
 measured at **8.70% corpus WER on 73 real clips** with a full error
 analysis in `docs/ASR_EVALUATION.md`, including a real bug found and fixed
-during testing (documented there). 36 tests passing. No customer-service
-domain data or metrics exist yet, and none are claimed — that starts once
-NLP modules require it.
+during testing (documented there). 36 tests passing.
+
+**Module 3** complete: pyannote.audio's pretrained diarization pipeline is
+gated (verified against the HF Hub API — no token/accepted terms available
+here), so `src/diarization/` implements an ungated alternative instead:
+Module 2's VAD reused for segmentation, speechbrain ECAPA-TDNN speaker
+embeddings, scikit-learn agglomerative clustering, overlap-based alignment
+with Whisper's transcript, and an explicitly opt-in (not default)
+CUSTOMER/AGENT role heuristic. `src/inference/pipeline.py` integrates
+Modules 2–3 into one call producing the final speaker-attributed
+conversation format. Measured DER on a synthetically-labeled but real
+two-speaker test call: **11.68%, zero speaker confusion** — full
+methodology, the gating decision, and the overlapping-speech limitation are
+in `docs/DIARIZATION.md`. 56 tests passing (19 new for diarization).
+
+No customer-service domain data or metrics exist yet, and none are claimed
+— that starts once the NLP modules (4+) require it.
