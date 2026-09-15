@@ -1,0 +1,19 @@
+# Agent quality score weights (Module 7). Four components, each already
+# in or normalized to a 0-1 range where 1 is always "better":
+#   resolution_rate            — fraction of calls resolved
+#   1 - escalation_rate        — fraction of calls that did NOT escalate
+#   normalized_sentiment_delta — customer sentiment trend, rescaled from [-2,+2] to [0,1]
+#   satisfied_fraction         — fraction of calls ending "Satisfied"
+#
+# Weights default to equal (0.25 each) — not because these four factors
+# are assumed equally important in some validated sense, but because no
+# labeled ground truth exists for "what makes a good agent score" to fit
+# weights against (this is synthetic/demo data — see docs/BUSINESS_MODELS.md).
+# Equal weighting is the least-assumption default; adjust here if a real
+# deployment has business priorities (e.g. weighting escalation avoidance
+# higher for a team focused on de-escalation).
+weights:
+  resolution_rate: 0.25
+  non_escalation_rate: 0.25
+  sentiment_improvement: 0.25
+  satisfaction: 0.25

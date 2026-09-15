@@ -120,7 +120,7 @@ layer, never as the system's primary intelligence.
 | **10. Testing + MLOps + Docker + Deployment** | Full test suite, MLflow tracking, Docker Compose, monitoring. |
 
 Each module is defined, implemented, and validated independently before the
-next begins — Modules 7–10 are not started until explicitly requested.
+next begins — Modules 8–10 are not started until explicitly requested.
 
 ## 12. Current Status
 
@@ -214,6 +214,32 @@ caching at all, reloading a model from disk on every single prediction
 call — real churn that contributed to this machine's repeated memory
 pressure, fixed with `@lru_cache` plus explicit cache release between
 training phases. 111 tests passing, all modules.
+
+**Module 7** complete: `src/models/business/` — resolution and
+escalation rebuilt with 17 named, explicit features (RandomForest, not
+Module 6's embeddings) specifically so predictions are explainable:
+71.67%/0.688 macro F1 for resolution (an honest ~18-point drop from
+Module 6's 90.00%/0.897 — the real interpretability-vs-performance
+cost, documented not hidden), and F1 0.925 / ROC-AUC 0.942 / Brier 0.062
+for escalation, exposed as a probability bucketed into configurable
+Low/Medium/High tiers. Structured `model_explanation` (named factors +
+feature importances) is kept explicitly separate from a templated
+`natural_language_explanation` generated from it — never presented as a
+second independent judgment. Agent analytics compute only what's
+genuinely measurable (resolution/escalation rate, handling time,
+sentiment improvement, talk/listen ratio from real timestamps);
+`interruption_frequency` is deliberately omitted since Module 3 can't
+detect overlapping speech. The agent quality score
+(`configs/agent_score.yaml`) is a documented equal-weighted default,
+config-driven and fully auditable (every result reports its component
+breakdown). `src/models/business/pipeline.py::analyze_call()` matches
+the spec's exact unified-output schema. A real bug found during
+integration testing: the fine-tuned NER model truncated "45821" to "45"
+in a busier sentence, and the model+rules combiner was discarding the
+regex's correct, longer match on overlap — fixed to prefer the longer
+span regardless of source, with a regression test. Full writeup,
+including the honest Module 6 comparison, in `docs/BUSINESS_MODELS.md`.
+126 tests passing, all seven modules.
 
 No customer-service domain data or metrics exist beyond what's listed
 above — nothing is claimed without a real measured number behind it.

@@ -71,3 +71,10 @@ def get_diarization_config() -> dict:
     config_path = BASE_DIR / "configs" / "diarization.yaml"
     with open(config_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+@lru_cache
+def get_agent_score_config() -> dict:
+    config_path = BASE_DIR / "configs" / "agent_score.yaml"
+    with open(config_path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)

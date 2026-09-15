@@ -192,6 +192,22 @@ def test_transformer_predicts_entities_with_valid_schema():
 
 
 @requires_ner_model
+def test_inference_prefers_longer_span_on_overlap():
+    """Regression test: with more surrounding context, the fine-tuned
+    model sometimes truncates a structured identifier ("45" instead of
+    "45821") while the regex rule still gets the full span. The combiner
+    must keep the longer, correct match rather than always trusting the
+    model on overlap."""
+    from src.nlp.ner.inference import extract_entities
+
+    text = "This is ridiculous, my order 45821 never arrived and I want a refund. Get me a manager!"
+    entities = extract_entities(text)
+    order_ids = [e for e in entities if e.label == "ORDER_ID"]
+    assert order_ids
+    assert order_ids[0].text == "45821"
+
+
+@requires_ner_model
 def test_full_pipeline_integration():
     from src.nlp.ner.pipeline import analyze_text
 

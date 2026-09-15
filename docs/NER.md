@@ -215,6 +215,20 @@ once over the full concatenated transcript (for call-level
 not repeated every turn). Takes Module 3's speaker-attributed conversation
 format directly.
 
+**A real bug found during Module 7 integration testing**: with more
+surrounding context, the fine-tuned model sometimes truncates a
+structured identifier it gets right in isolation —
+`predict_entities(..., "regarding order 45821")` correctly returns
+`"45821"`, but the same order number inside a longer, busier sentence
+(`"This is ridiculous, my order 45821 never arrived and I want a
+refund. Get me a manager!"`) returned only `"45"`. The regex rule still
+found the full `"45821"` span, but the original combiner
+(`src/nlp/ner/inference.py`) always kept the model's prediction on any
+overlap, discarding the rule's correct, longer match specifically because
+it overlapped with the model's incorrect, shorter one. Fixed by keeping
+whichever span is **longer** on overlap, regardless of source — verified
+with a regression test (`tests/test_ner.py::test_inference_prefers_longer_span_on_overlap`).
+
 ## 10. Status
 
 Conversation-level modeling (Module 6) not started, per the spec's

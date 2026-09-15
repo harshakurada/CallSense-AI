@@ -113,6 +113,13 @@ python scripts/train_conversation_model.py
 python scripts/run_conversation_pipeline.py --input conversation.json
 ```
 
+### Run resolution, escalation risk & the unified analysis (Module 7)
+
+```bash
+python scripts/train_business_models.py
+python scripts/run_business_pipeline.py --input conversation.json
+```
+
 ## Project Structure
 
 ```text
@@ -131,14 +138,16 @@ CallSense AI/
 │                       # evaluate_diarization, run_diarization_pipeline,
 │                       # train_nlp_models, run_nlp_pipeline,
 │                       # train_ner_model, run_ner_pipeline,
-│                       # train_conversation_model, run_conversation_pipeline
-├── tests/              # unit + API + audio + ASR + diarization + NLP + NER + conversation tests
-├── configs/            # config.yaml, audio.yaml, diarization.yaml + settings.py
+│                       # train_conversation_model, run_conversation_pipeline,
+│                       # train_business_models, run_business_pipeline
+├── tests/              # unit + API + audio + ASR + diarization + NLP + NER +
+│                       # conversation + business-model tests
+├── configs/            # config.yaml, audio.yaml, diarization.yaml, agent_score.yaml + settings.py
 ├── models/             # saved model artifacts (git-ignored)
 ├── notebooks/          # exploratory notebooks per module
 ├── docs/               # ARCHITECTURE.md, PROJECT_PLAN.md, DATASETS.md,
 │                       # ASR_EVALUATION.md, DIARIZATION.md, NLP_MODELS.md, NER.md,
-│                       # CONVERSATION_MODEL.md
+│                       # CONVERSATION_MODEL.md, BUSINESS_MODELS.md
 ├── app/                # Streamlit dashboard
 ├── api/                # FastAPI backend
 ├── requirements.txt
@@ -148,7 +157,7 @@ CallSense AI/
 
 ## Current Status
 
-**Modules 1–6 complete.**
+**Modules 1–7 complete.**
 
 - **Module 1 (Foundation)**: repository structure, centralized configuration,
   a working FastAPI backend and Streamlit dashboard wired via a health check,
@@ -219,6 +228,29 @@ CallSense AI/
   tasks at once); fixed with per-task attention pooling and better noise
   injection — full three-run debugging history, not just the final
   number, in `docs/CONVERSATION_MODEL.md`.
+- **Module 7 (Resolution + Escalation Risk + Agent Quality)**: resolution
+  and escalation rebuilt with **named, explicit features** (RandomForest,
+  not embeddings) specifically so predictions can be explained — you can
+  name which of 17 features drove a decision, not which of 768 opaque
+  embedding dimensions did. Resolution: 71.67%/0.688 (vs. Module 6's
+  90.00%/0.897 — an honest ~18-point interpretability-vs-performance
+  trade-off, not hidden). Escalation: probability + configurable
+  Low/Medium/High tiers, **F1 0.925, ROC-AUC 0.942, Brier 0.062**
+  (calibration), with structured `model_explanation` (top contributing
+  named factors) kept explicitly separate from a templated
+  `natural_language_explanation` generated from them. Agent analytics
+  (resolution rate, escalation rate, avg handling time, sentiment
+  improvement, talk/listen ratio from real timestamps) feed a
+  transparent, config-driven quality score
+  (`configs/agent_score.yaml`) — every score reports its full weight
+  breakdown, never just a number. `interruption_frequency` is
+  deliberately **not** computed — Module 3 can't detect overlapping
+  speech, so there's no honest way to measure it. A real bug found
+  during integration: the fine-tuned NER model truncated an order number
+  in a busier sentence ("45" instead of "45821"), and the entity-merging
+  logic was discarding the regex rule's correct, longer match — fixed to
+  prefer the longer span regardless of source. Full details in
+  `docs/BUSINESS_MODELS.md`.
 
 No customer-service-domain metrics exist for anything beyond what's
 listed above — nothing here is claimed without a real measured number
@@ -236,7 +268,7 @@ Full requirements and constraints: [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md
 | 4 | Intent + Sentiment + Emotion | ✅ Done |
 | 5 | NER + Information Extraction | ✅ Done |
 | 6 | Conversation-Level Deep Learning | ✅ Done |
-| 7 | Resolution + Escalation + Agent Intelligence | Not started |
+| 7 | Resolution + Escalation + Agent Intelligence | ✅ Done |
 | 8 | Semantic Search + Analytics + Optional LLM Layer | Not started |
 | 9 | Backend + Dashboard + Database | Not started |
 | 10 | Testing + MLOps + Docker + Deployment | Not started |
