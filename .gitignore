@@ -13,21 +13,29 @@ env/
 .env.*
 !.env.example
 
-# Node / React
-node_modules/
-frontend/dist/
-frontend/build/
-npm-debug.log*
+# Data (raw/interim/processed data is never committed; keep the folders)
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
 
-# ML artifacts
-data/raw/
-data/processed/
-models/*.bin
-models/*.pt
-models/*.onnx
-mlruns/
+# Model artifacts
+models/*
+!models/.gitkeep
+*.bin
+*.pt
 *.ckpt
+*.onnx
+
+# Experiment tracking
+mlruns/
+mlartifacts/
 wandb/
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
 
 # OS / IDE
 .DS_Store
@@ -38,5 +46,3 @@ Thumbs.db
 # Logs
 *.log
 logs/
-dist/
-frontend/.vite/

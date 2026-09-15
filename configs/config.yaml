@@ -1,0 +1,39 @@
+# Non-secret, version-controlled configuration.
+# Secrets and per-environment values (DB credentials, ports) live in .env instead.
+
+audio:
+  sample_rate: 16000
+  mono: true
+  max_duration_seconds: 600
+  silence_threshold_db: -40
+  chunk_duration_seconds: 30
+
+asr:
+  engine: faster-whisper
+  model_size: base
+  device: cpu
+  compute_type: int8
+  language: en
+
+diarization:
+  engine: pyannote.audio
+  model_name: pyannote/speaker-diarization-3.1
+  min_speakers: 2
+  max_speakers: 2
+
+nlp:
+  intent_model: bert-base-uncased
+  sentiment_model: cardiffnlp/twitter-roberta-base-sentiment-latest
+  emotion_model: j-hartmann/emotion-english-distilroberta-base
+  ner_model: dslim/bert-base-NER
+
+thresholds:
+  escalation_risk_high: 0.70
+  escalation_risk_medium: 0.40
+  negative_sentiment_confidence: 0.60
+
+paths:
+  data_raw: data/raw
+  data_interim: data/interim
+  data_processed: data/processed
+  models_dir: models
