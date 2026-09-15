@@ -106,6 +106,13 @@ python scripts/train_ner_model.py
 python scripts/run_ner_pipeline.py --text "John Smith called regarding order 45821"
 ```
 
+### Run conversation-level prediction (Module 6)
+
+```bash
+python scripts/train_conversation_model.py
+python scripts/run_conversation_pipeline.py --input conversation.json
+```
+
 ## Project Structure
 
 ```text
@@ -123,13 +130,15 @@ CallSense AI/
 │                       # evaluate_asr, eda_audio, run_asr_pipeline,
 │                       # evaluate_diarization, run_diarization_pipeline,
 │                       # train_nlp_models, run_nlp_pipeline,
-│                       # train_ner_model, run_ner_pipeline
-├── tests/              # unit + API + audio + ASR + diarization + NLP + NER tests
+│                       # train_ner_model, run_ner_pipeline,
+│                       # train_conversation_model, run_conversation_pipeline
+├── tests/              # unit + API + audio + ASR + diarization + NLP + NER + conversation tests
 ├── configs/            # config.yaml, audio.yaml, diarization.yaml + settings.py
 ├── models/             # saved model artifacts (git-ignored)
 ├── notebooks/          # exploratory notebooks per module
 ├── docs/               # ARCHITECTURE.md, PROJECT_PLAN.md, DATASETS.md,
-│                       # ASR_EVALUATION.md, DIARIZATION.md, NLP_MODELS.md, NER.md
+│                       # ASR_EVALUATION.md, DIARIZATION.md, NLP_MODELS.md, NER.md,
+│                       # CONVERSATION_MODEL.md
 ├── app/                # Streamlit dashboard
 ├── api/                # FastAPI backend
 ├── requirements.txt
@@ -139,7 +148,7 @@ CallSense AI/
 
 ## Current Status
 
-**Modules 1–5 complete.**
+**Modules 1–6 complete.**
 
 - **Module 1 (Foundation)**: repository structure, centralized configuration,
   a working FastAPI backend and Streamlit dashboard wired via a health check,
@@ -189,6 +198,27 @@ CallSense AI/
   but real-only F1 is 0.4894** (synthetic-only 0.9968) — full per-entity
   breakdown, including why ORGANIZATION/PRODUCT are the hardest real
   types, in `docs/NER.md`.
+- **Module 6 (Conversation-Level Deep Learning)**: a frozen-DistilBERT
+  utterance encoder feeding a small trainable Transformer (speaker +
+  positional embeddings, per-task attention pooling) with 4 heads —
+  category, resolution, satisfaction, escalation — versus a classical
+  baseline (turn counts + Modules 4-5's real classifiers as features).
+  Trained on synthetic conversations (no public dataset has real
+  resolution/satisfaction/escalation labels — checked, documented in
+  `docs/CONVERSATION_MODEL.md`), with real Bitext text for the opening
+  complaint. Results: category 88.89%/0.893 (baseline wins here — it
+  reuses Module 4's already-fine-tuned intent classifier directly), but
+  the deep model clearly wins **resolution 90.00%/0.897** (vs. baseline
+  65.00%/0.614), **satisfaction 88.89%/0.886** (vs. 67.22%/0.663), and
+  **escalation 96.67%/0.947** (vs. 71.11%/0.666) — the actual point of a
+  conversation-level model. Took three real training runs to get right:
+  the first reached a suspicious literal 100% on three tasks (the
+  synthetic data's "noise" didn't touch the agent's always-honest closing
+  line) while category collapsed entirely (a single shared pooled vector
+  couldn't serve both the opening-complaint task and the closing-turn
+  tasks at once); fixed with per-task attention pooling and better noise
+  injection — full three-run debugging history, not just the final
+  number, in `docs/CONVERSATION_MODEL.md`.
 
 No customer-service-domain metrics exist for anything beyond what's
 listed above — nothing here is claimed without a real measured number
@@ -205,7 +235,7 @@ Full requirements and constraints: [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md
 | 3 | Speaker Diarization | ✅ Done |
 | 4 | Intent + Sentiment + Emotion | ✅ Done |
 | 5 | NER + Information Extraction | ✅ Done |
-| 6 | Conversation-Level Deep Learning | Not started |
+| 6 | Conversation-Level Deep Learning | ✅ Done |
 | 7 | Resolution + Escalation + Agent Intelligence | Not started |
 | 8 | Semantic Search + Analytics + Optional LLM Layer | Not started |
 | 9 | Backend + Dashboard + Database | Not started |

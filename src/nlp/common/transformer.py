@@ -19,6 +19,7 @@ what that trades away.
 """
 from collections import Counter
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -170,15 +171,25 @@ def fine_tune_classifier(
     return TrainedClassifier(metrics=metrics, output_dir=output_dir)
 
 
+@lru_cache
+def _load_classifier(model_dir: str):
+    """Cached per model_dir — found reloading from disk on every single
+    predict_batch() call (no caching at all originally), which meant
+    Module 6's baseline feature extraction — one predict call per
+    conversation, ~1200 conversations — repeatedly allocated and freed a
+    full model. That alloc/dealloc churn was a real contributor to this
+    8GB machine's OOM kills, not just wasted time."""
+    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    model = AutoModelForSequenceClassification.from_pretrained(model_dir)
+    model.eval()
+    return tokenizer, model
+
+
 def predict_batch(model_dir: str | Path, texts: list[str], max_length: int = 64, batch_size: int = 32) -> list[dict]:
     """Returns [{"label": str, "confidence": float, "probabilities": {label: prob}}, ...].
     Confidence is the model's own softmax probability for its predicted
     class — never a fabricated or estimated value."""
-    model_dir = str(model_dir)
-    tokenizer = AutoTokenizer.from_pretrained(model_dir)
-    model = AutoModelForSequenceClassification.from_pretrained(model_dir)
-    model.eval()
-
+    tokenizer, model = _load_classifier(str(model_dir))
     id2label = model.config.id2label
     results = []
     with torch.no_grad():

@@ -120,7 +120,7 @@ layer, never as the system's primary intelligence.
 | **10. Testing + MLOps + Docker + Deployment** | Full test suite, MLflow tracking, Docker Compose, monitoring. |
 
 Each module is defined, implemented, and validated independently before the
-next begins — Modules 6–10 are not started until explicitly requested.
+next begins — Modules 7–10 are not started until explicitly requested.
 
 ## 12. Current Status
 
@@ -184,6 +184,36 @@ breakdown in `docs/NER.md`. bert-tiny was chosen from the start here
 (not as an emergency fallback) given Module 4's repeated OOM incidents at
 DistilBERT's scale, and hit the identical too-low-learning-rate failure
 Module 4's emotion classifier did, fixed the same way. 95 tests passing.
+
+**Module 6** complete: `src/models/conversation/` — a frozen-DistilBERT
+utterance encoder feeding a small trainable Transformer (speaker +
+positional embeddings, per-task attention pooling, 4 heads: category,
+resolution, satisfaction, escalation) versus a classical baseline (turn
+counts + Modules 4-5's real classifiers as features). No public dataset
+has real resolution/satisfaction/escalation labels for customer-service
+conversations (MultiWOZ/SPADE/DailyDialog checked and ruled out), so
+synthetic conversations are used, built around real Bitext text for the
+opening complaint, documented as synthetic throughout
+(`docs/CONVERSATION_MODEL.md`). Measured: category 88.89%/0.893 F1
+(baseline's 99.44%/0.993 wins here since it directly reuses Module 4's
+own fine-tuned intent classifier), but the deep model clearly wins
+resolution (90.00%/0.897 vs. baseline 65.00%/0.614), satisfaction
+(88.89%/0.886 vs. 67.22%/0.663), and escalation (96.67%/0.947 vs.
+71.11%/0.666). Took three full training runs to reach: run 1 hit a
+literal 100% on three tasks from a synthetic-data leakage bug (noise
+didn't touch the agent's always-honest closing line) while category
+collapsed to predicting only 5 of 11 classes (a single shared pooled
+vector serving all four heads, starved by task interference); run 2's
+hyperparameter-only fix flipped the same collapse onto the other three
+tasks; run 3's architectural fix (per-task attention pooling, each head
+its own query vector over the same shared encoded sequence) is what
+actually resolved it — the full history is in
+`docs/CONVERSATION_MODEL.md`, not just the final number. Also fixed along
+the way: `src/nlp/common/transformer.py`'s classifier loader had no
+caching at all, reloading a model from disk on every single prediction
+call — real churn that contributed to this machine's repeated memory
+pressure, fixed with `@lru_cache` plus explicit cache release between
+training phases. 111 tests passing, all modules.
 
 No customer-service domain data or metrics exist beyond what's listed
 above — nothing is claimed without a real measured number behind it.
