@@ -120,7 +120,7 @@ layer, never as the system's primary intelligence.
 | **10. Testing + MLOps + Docker + Deployment** | Full test suite, MLflow tracking, Docker Compose, monitoring. |
 
 Each module is defined, implemented, and validated independently before the
-next begins — Modules 5–10 are not started until explicitly requested.
+next begins — Modules 6–10 are not started until explicitly requested.
 
 ## 12. Current Status
 
@@ -168,6 +168,22 @@ incident, including a learning-rate mistake found and fixed along the way,
 is in `docs/NLP_MODELS.md`). Sentiment aggregation and an emotion timeline
 (`src/nlp/emotion/timeline.py`) are built; `src/nlp/inference.py`
 integrates all three into one call. 71 tests passing.
+
+**Module 5** complete: `src/nlp/ner/` — spaCy (`en_core_web_sm`) + regex
+rules baseline, and a fine-tuned `prajjwal1/bert-tiny` token-classification
+Transformer, trained on Few-NERD (CC BY-SA 4.0; CoNLL-2003 ruled out —
+requires a signed NIST/Reuters license agreement) augmented with
+clearly-documented synthetic examples for business identifiers no public
+dataset labels (ORDER_ID, ACCOUNT_ID, INVOICE_ID — generated via
+templates + Faker, never presented as real). PII masking
+(`src/nlp/ner/pii.py`) reproduces the spec's own worked example exactly.
+Real and synthetic test data scored separately specifically so the easy
+synthetic entities can't inflate the real number: overall F1 0.6482,
+**real-only F1 0.4894** (synthetic-only 0.9968) — full per-entity
+breakdown in `docs/NER.md`. bert-tiny was chosen from the start here
+(not as an emergency fallback) given Module 4's repeated OOM incidents at
+DistilBERT's scale, and hit the identical too-low-learning-rate failure
+Module 4's emotion classifier did, fixed the same way. 95 tests passing.
 
 No customer-service domain data or metrics exist beyond what's listed
 above — nothing is claimed without a real measured number behind it.

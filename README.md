@@ -99,6 +99,13 @@ python scripts/train_nlp_models.py --task all   # trains + evaluates all three, 
 python scripts/run_nlp_pipeline.py --input conversation.json
 ```
 
+### Run NER + PII masking (Module 5)
+
+```bash
+python scripts/train_ner_model.py
+python scripts/run_ner_pipeline.py --text "John Smith called regarding order 45821"
+```
+
 ## Project Structure
 
 ```text
@@ -115,13 +122,14 @@ CallSense AI/
 ├── scripts/            # download_data, validate_dataset, transcribe_dataset,
 │                       # evaluate_asr, eda_audio, run_asr_pipeline,
 │                       # evaluate_diarization, run_diarization_pipeline,
-│                       # train_nlp_models, run_nlp_pipeline
-├── tests/              # unit + API + audio + ASR + diarization + NLP tests
+│                       # train_nlp_models, run_nlp_pipeline,
+│                       # train_ner_model, run_ner_pipeline
+├── tests/              # unit + API + audio + ASR + diarization + NLP + NER tests
 ├── configs/            # config.yaml, audio.yaml, diarization.yaml + settings.py
 ├── models/             # saved model artifacts (git-ignored)
 ├── notebooks/          # exploratory notebooks per module
 ├── docs/               # ARCHITECTURE.md, PROJECT_PLAN.md, DATASETS.md,
-│                       # ASR_EVALUATION.md, DIARIZATION.md, NLP_MODELS.md
+│                       # ASR_EVALUATION.md, DIARIZATION.md, NLP_MODELS.md, NER.md
 ├── app/                # Streamlit dashboard
 ├── api/                # FastAPI backend
 ├── requirements.txt
@@ -131,7 +139,7 @@ CallSense AI/
 
 ## Current Status
 
-**Modules 1–4 complete.**
+**Modules 1–5 complete.**
 
 - **Module 1 (Foundation)**: repository structure, centralized configuration,
   a working FastAPI backend and Streamlit dashboard wired via a health check,
@@ -167,6 +175,20 @@ CallSense AI/
   learning-rate retuning that made bert-tiny actually beat its baseline).
   Sentiment aggregation (utterance/customer/conversation-level) and an
   emotion timeline feed the eventual dashboard.
+- **Module 5 (NER + Information Extraction)**: spaCy (`en_core_web_sm`) +
+  regex rules baseline, plus a fine-tuned token-classification Transformer
+  (`prajjwal1/bert-tiny`, chosen upfront given Module 4's memory
+  incidents) trained on Few-NERD (CC BY-SA 4.0; CoNLL-2003 was ruled out —
+  it requires a signed NIST/Reuters license agreement) augmented with
+  clearly-documented synthetic data for business identifiers no public
+  dataset labels (ORDER_ID, ACCOUNT_ID, INVOICE_ID). PII masking matches
+  the spec's own worked example exactly (`"John Smith called regarding
+  order 45821."` → `"[PERSON] called regarding order [ORDER_ID]."`).
+  Real-vs-synthetic test scoring kept separate specifically so the easy
+  synthetic entities can't hide real performance: **overall F1 0.6482,
+  but real-only F1 is 0.4894** (synthetic-only 0.9968) — full per-entity
+  breakdown, including why ORGANIZATION/PRODUCT are the hardest real
+  types, in `docs/NER.md`.
 
 No customer-service-domain metrics exist for anything beyond what's
 listed above — nothing here is claimed without a real measured number
@@ -182,7 +204,7 @@ Full requirements and constraints: [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md
 | 2 | Data + Audio + ASR | ✅ Done |
 | 3 | Speaker Diarization | ✅ Done |
 | 4 | Intent + Sentiment + Emotion | ✅ Done |
-| 5 | NER + Information Extraction | Not started |
+| 5 | NER + Information Extraction | ✅ Done |
 | 6 | Conversation-Level Deep Learning | Not started |
 | 7 | Resolution + Escalation + Agent Intelligence | Not started |
 | 8 | Semantic Search + Analytics + Optional LLM Layer | Not started |
