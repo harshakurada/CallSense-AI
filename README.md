@@ -92,6 +92,13 @@ python scripts/evaluate_diarization.py   # real DER on a synthetic two-speaker t
 python scripts/run_diarization_pipeline.py --input data/raw/librispeech_dummy/1272-128104-0000.flac
 ```
 
+### Run NLP: intent, sentiment, emotion (Module 4)
+
+```bash
+python scripts/train_nlp_models.py --task all   # trains + evaluates all three, writes real metrics
+python scripts/run_nlp_pipeline.py --input conversation.json
+```
+
 ## Project Structure
 
 ```text
@@ -107,13 +114,14 @@ CallSense AI/
 │   └── utils/           # logging, exceptions
 ├── scripts/            # download_data, validate_dataset, transcribe_dataset,
 │                       # evaluate_asr, eda_audio, run_asr_pipeline,
-│                       # evaluate_diarization, run_diarization_pipeline
-├── tests/              # unit + API + audio + ASR + diarization tests
+│                       # evaluate_diarization, run_diarization_pipeline,
+│                       # train_nlp_models, run_nlp_pipeline
+├── tests/              # unit + API + audio + ASR + diarization + NLP tests
 ├── configs/            # config.yaml, audio.yaml, diarization.yaml + settings.py
 ├── models/             # saved model artifacts (git-ignored)
 ├── notebooks/          # exploratory notebooks per module
 ├── docs/               # ARCHITECTURE.md, PROJECT_PLAN.md, DATASETS.md,
-│                       # ASR_EVALUATION.md, DIARIZATION.md
+│                       # ASR_EVALUATION.md, DIARIZATION.md, NLP_MODELS.md
 ├── app/                # Streamlit dashboard
 ├── api/                # FastAPI backend
 ├── requirements.txt
@@ -123,7 +131,7 @@ CallSense AI/
 
 ## Current Status
 
-**Modules 1–3 complete.**
+**Modules 1–4 complete.**
 
 - **Module 1 (Foundation)**: repository structure, centralized configuration,
   a working FastAPI backend and Streamlit dashboard wired via a health check,
@@ -147,9 +155,22 @@ CallSense AI/
   speaker confusion** — full methodology and limitations (notably
   overlapping speech) in `docs/DIARIZATION.md`. `src/inference/pipeline.py`
   integrates Modules 2–3 end to end.
+- **Module 4 (Intent + Sentiment + Emotion)**: TF-IDF+LogisticRegression
+  baseline and a fine-tuned Transformer per task, both measured with real
+  data — Bitext customer-support intent (11 classes, CDLA-Sharing-1.0),
+  Twitter US Airline sentiment (3 classes, CC-BY-NC-SA-4.0), dair-ai
+  emotion (6 classes). Results: intent **99.66% acc / 0.9972 macro F1**
+  (DistilBERT), sentiment **82.80% / 0.7748** (DistilBERT), emotion
+  **86.38% / 0.8277** (bert-tiny — DistilBERT was killed twice by the OS
+  for low memory on this 8GB machine even after batch-size/optimizer
+  mitigations; documented in full in `docs/NLP_MODELS.md`, including the
+  learning-rate retuning that made bert-tiny actually beat its baseline).
+  Sentiment aggregation (utterance/customer/conversation-level) and an
+  emotion timeline feed the eventual dashboard.
 
-No customer-service-domain metrics exist yet or are claimed anywhere —
-that data doesn't exist until the NLP modules need it.
+No customer-service-domain metrics exist for anything beyond what's
+listed above — nothing here is claimed without a real measured number
+behind it.
 
 Full requirements and constraints: [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md).
 
@@ -160,7 +181,7 @@ Full requirements and constraints: [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md
 | 1 | Foundation | ✅ Done |
 | 2 | Data + Audio + ASR | ✅ Done |
 | 3 | Speaker Diarization | ✅ Done |
-| 4 | Intent + Sentiment + Emotion | Not started |
+| 4 | Intent + Sentiment + Emotion | ✅ Done |
 | 5 | NER + Information Extraction | Not started |
 | 6 | Conversation-Level Deep Learning | Not started |
 | 7 | Resolution + Escalation + Agent Intelligence | Not started |

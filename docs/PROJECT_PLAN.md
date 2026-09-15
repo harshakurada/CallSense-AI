@@ -120,7 +120,7 @@ layer, never as the system's primary intelligence.
 | **10. Testing + MLOps + Docker + Deployment** | Full test suite, MLflow tracking, Docker Compose, monitoring. |
 
 Each module is defined, implemented, and validated independently before the
-next begins — Modules 4–10 are not started until explicitly requested.
+next begins — Modules 5–10 are not started until explicitly requested.
 
 ## 12. Current Status
 
@@ -153,5 +153,21 @@ two-speaker test call: **11.68%, zero speaker confusion** — full
 methodology, the gating decision, and the overlapping-speech limitation are
 in `docs/DIARIZATION.md`. 56 tests passing (19 new for diarization).
 
-No customer-service domain data or metrics exist yet, and none are claimed
-— that starts once the NLP modules (4+) require it.
+**Module 4** complete: TF-IDF+LogisticRegression baseline and a fine-tuned
+Transformer for each of intent (`src/nlp/intent/`), sentiment
+(`src/nlp/sentiment/`), and emotion (`src/nlp/emotion/`), sharing common
+infrastructure (`src/nlp/common/`: stratified splitting, metrics,
+weighted-loss fine-tuning). Real datasets throughout — Bitext customer
+support (11 intent classes), Twitter US Airline sentiment (3 classes),
+dair-ai emotion (6 classes) — documented with verified source/license/size
+in `docs/NLP_MODELS.md`, including why each differs from the spec's
+suggested label lists. Measured: intent 99.66%/0.9972 macro F1, sentiment
+82.80%/0.7748, emotion 86.38%/0.8277 (bert-tiny, after DistilBERT was
+killed twice by the OS for low memory on this 8GB machine — the full
+incident, including a learning-rate mistake found and fixed along the way,
+is in `docs/NLP_MODELS.md`). Sentiment aggregation and an emotion timeline
+(`src/nlp/emotion/timeline.py`) are built; `src/nlp/inference.py`
+integrates all three into one call. 71 tests passing.
+
+No customer-service domain data or metrics exist beyond what's listed
+above — nothing is claimed without a real measured number behind it.

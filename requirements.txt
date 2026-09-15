@@ -30,7 +30,7 @@ faster-whisper==1.0.3
 av==13.1.0
 ctranslate2==4.8.2
 onnxruntime==1.30.0
-tokenizers==0.23.2
+tokenizers==0.20.3  # downgraded from 0.23.2 by transformers' <0.21 pin (Module 4) — faster-whisper still passes all tests on it
 huggingface_hub==1.31.0
 librosa==0.10.2
 soundfile==0.12.1
@@ -53,8 +53,19 @@ scikit-learn==1.9.1
 pyannote.core==6.0.1     # DER computation only (src/diarization/evaluation.py) — not the gated pipeline
 pyannote.metrics==3.2.1
 
-# --- NLP (Module 4+, not installed yet) ---
+# --- NLP: intent, sentiment, emotion (Module 4) ---
 transformers==4.45.1
+accelerate==1.0.1
+datasets==5.0.1     # loads the intent/sentiment/emotion datasets from the HF Hub
+
+# --- NER + PII (Module 5) ---
+spacy==3.8.16
+seqeval==1.2.2      # entity-level P/R/F1 (src/nlp/ner/*)
+Faker==30.8.2        # synthetic business-entity training data — see docs/NER.md
+# after installing requirements.txt, also run:
+#   python -m spacy download en_core_web_sm
+
+# --- NLP (Module 8+, not installed yet) ---
 sentence-transformers==3.1.1
 
 # --- Testing ---
