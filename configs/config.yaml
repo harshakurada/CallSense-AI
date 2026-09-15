@@ -1,18 +1,14 @@
 # Non-secret, version-controlled configuration.
 # Secrets and per-environment values (DB credentials, ports) live in .env instead.
-
-audio:
-  sample_rate: 16000
-  mono: true
-  max_duration_seconds: 600
-  silence_threshold_db: -40
-  chunk_duration_seconds: 30
+#
+# Audio-specific parameters (sample rate, VAD, chunking, normalization) live
+# in configs/audio.yaml instead of here — see get_audio_config().
 
 asr:
   engine: faster-whisper
   model_size: base
-  device: cpu
-  compute_type: int8
+  device: auto        # faster-whisper/ctranslate2 picks cuda if available, else cpu
+  compute_type: int8  # int8 on CPU, float16 would be used on GPU (see src/asr/transcribe.py)
   language: en
 
 diarization:

@@ -120,11 +120,24 @@ layer, never as the system's primary intelligence.
 | **10. Testing + MLOps + Docker + Deployment** | Full test suite, MLflow tracking, Docker Compose, monitoring. |
 
 Each module is defined, implemented, and validated independently before the
-next begins — Modules 2–10 are not started until explicitly requested.
+next begins — Modules 3–10 are not started until explicitly requested.
 
 ## 12. Current Status
 
-Module 1 complete: repository structure, configuration system, FastAPI +
+**Module 1** complete: repository structure, configuration system, FastAPI +
 Streamlit skeletons (health-check wired end-to-end), test scaffolding, and
-this documentation. No modeling work has started — no metrics exist yet, and
-none are claimed.
+this documentation.
+
+**Module 2** complete: dataset strategy documented (`docs/DATASETS.md`) —
+LibriSpeech + a 73-sample real subset for development, AMI and Common Voice
+documented with their manual-auth requirements rather than scripted around;
+a real audio pipeline (`src/audio/`: validation, resampling, normalization,
+energy-based VAD, silence-aware chunking) driven by `configs/audio.yaml`;
+faster-whisper transcription (`src/asr/transcribe.py`) returning the exact
+required JSON schema; batch transcription and dataset validation scripts
+with per-file failure isolation; WER evaluation (`src/asr/evaluation.py`)
+measured at **8.70% corpus WER on 73 real clips** with a full error
+analysis in `docs/ASR_EVALUATION.md`, including a real bug found and fixed
+during testing (documented there). 36 tests passing. No customer-service
+domain data or metrics exist yet, and none are claimed — that starts once
+NLP modules require it.

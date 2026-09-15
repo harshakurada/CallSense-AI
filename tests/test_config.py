@@ -1,4 +1,4 @@
-from configs.settings import get_config, get_settings
+from configs.settings import get_audio_config, get_config, get_settings
 
 
 def test_settings_load_from_env():
@@ -7,12 +7,17 @@ def test_settings_load_from_env():
     assert settings.database_url.startswith("postgresql://")
 
 
-def test_config_yaml_loads_audio_params():
+def test_config_yaml_loads_pipeline_params():
     config = get_config()
-    assert config["audio"]["sample_rate"] == 16000
     assert "asr" in config and "diarization" in config and "nlp" in config
 
 
 def test_config_yaml_has_thresholds():
     config = get_config()
     assert 0.0 < config["thresholds"]["escalation_risk_high"] <= 1.0
+
+
+def test_audio_config_loads():
+    audio_config = get_audio_config()
+    assert audio_config["io"]["target_sample_rate"] == 16000
+    assert "vad" in audio_config and "chunking" in audio_config

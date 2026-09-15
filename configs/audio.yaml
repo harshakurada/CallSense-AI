@@ -1,0 +1,38 @@
+# Audio pipeline configuration (Module 2). This is the single source of
+# truth for audio parameters — src/audio/* must read from here, never
+# hard-code these values.
+
+io:
+  # faster-whisper and every downstream NLP stage expect 16kHz mono.
+  target_sample_rate: 16000
+  target_channels: 1
+  supported_formats: [wav, flac, mp3]
+  # mp3 decoding depends on the installed libsndfile version; if it fails,
+  # convert to wav/flac upstream (see docs/DATASETS.md).
+  max_duration_seconds: 600
+  min_duration_seconds: 0.3
+
+normalization:
+  # Peak normalization only — no compression/limiting, which would distort
+  # dynamics that later feed emotion detection (Module 4).
+  enabled: true
+  target_peak_dbfs: -3.0
+
+vad:
+  # Frame-based energy VAD (src/audio/vad.py). Deliberately not neural
+  # (silero/webrtcvad) yet — this keeps Module 2 free of a torch dependency
+  # and fully unit-testable offline; documented as an upgrade path.
+  frame_duration_ms: 30
+  silence_threshold_db: -40
+  min_silence_duration_ms: 300
+  min_speech_duration_ms: 200
+  # padding kept on either side of a detected speech region so words at
+  # region boundaries aren't clipped
+  speech_pad_ms: 100
+
+chunking:
+  chunk_duration_seconds: 30
+  overlap_seconds: 2
+  # if true, chunk boundaries snap to the nearest detected silence instead
+  # of cutting at a fixed sample offset, to avoid splitting mid-word
+  snap_to_silence: true

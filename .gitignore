@@ -37,6 +37,9 @@ wandb/
 # Notebooks checkpoints
 .ipynb_checkpoints/
 
+# Generated reports/plots (regenerate via scripts/eda_audio.py etc.)
+reports/
+
 # OS / IDE
 .DS_Store
 Thumbs.db

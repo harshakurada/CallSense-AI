@@ -21,14 +21,26 @@ psycopg2-binary==2.9.10
 # --- Experiment tracking ---
 mlflow==2.16.2
 
-# --- Deep learning / speech / NLP (installed starting Module 2, when the
-# audio+ASR pipeline is actually built — declared now so the eventual stack
-# is explicit) ---
-torch==2.4.1
-transformers==4.45.1
+# --- Audio + ASR (Module 2) ---
+# faster-whisper runs on ctranslate2, not torch, so no torch dependency here.
+# av is left unpinned by faster-whisper's own spec (<13,>=11) because that
+# range has no Python 3.13 wheel on Windows; 13.1.0 is used instead and works
+# fine for the decoding faster-whisper needs (see docs/DATASETS.md notes).
 faster-whisper==1.0.3
+av==13.1.0
+ctranslate2==4.8.2
+onnxruntime==1.30.0
+tokenizers==0.23.2
+huggingface_hub==1.31.0
 librosa==0.10.2
 soundfile==0.12.1
+jiwer==3.0.4
+matplotlib==3.9.2
+pyarrow==25.0.1  # scripts/download_data.py reads the librispeech-dummy parquet file directly
+
+# --- Deep learning / NLP (Module 3+, not installed yet) ---
+torch==2.4.1
+transformers==4.45.1
 pyannote.audio==3.3.2
 sentence-transformers==3.1.1
 
